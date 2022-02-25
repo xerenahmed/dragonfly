@@ -1,7 +1,6 @@
 package block
 
 import (
-	"fmt"
 	"github.com/df-mc/dragonfly/server/item"
 )
 
@@ -10,34 +9,21 @@ type CoralType struct {
 	coral
 }
 
-// TubeCoral returns the tube coral variant
-func TubeCoral() CoralType {
-	return CoralType{0}
+// CoralTypes holds a CoralType for each
+var CoralTypes = coralTypes{
+	Tube:   CoralType{0},
+	Brain:  CoralType{1},
+	Bubble: CoralType{2},
+	Fire:   CoralType{3},
+	Horn:   CoralType{4},
 }
 
-// BrainCoral returns the brain coral variant
-func BrainCoral() CoralType {
-	return CoralType{1}
-}
+// coralTypes is a struct containing all CoralType.
+type coralTypes struct{ Tube, Brain, Bubble, Fire, Horn CoralType }
 
-// BubbleCoral returns the bubble coral variant
-func BubbleCoral() CoralType {
-	return CoralType{2}
-}
-
-// FireCoral returns the fire coral variant
-func FireCoral() CoralType {
-	return CoralType{3}
-}
-
-// HornCoral returns the horn coral variant
-func HornCoral() CoralType {
-	return CoralType{4}
-}
-
-// CoralTypes returns all coral types.
-func CoralTypes() []CoralType {
-	return []CoralType{TubeCoral(), BrainCoral(), BubbleCoral(), FireCoral(), HornCoral()}
+// Slice returns all CoralType implementations as a slice.
+func (t coralTypes) Slice() []CoralType {
+	return []CoralType{t.Tube, t.Brain, t.Bubble, t.Fire, t.Horn}
 }
 
 type coral uint8
@@ -79,23 +65,6 @@ func (c coral) Name() string {
 		return "Horn Coral"
 	}
 	panic("unknown coral type")
-}
-
-// FromString ...
-func (c coral) FromString(s string) (interface{}, error) {
-	switch s {
-	case "tube":
-		return CoralType{coral(0)}, nil
-	case "brain":
-		return CoralType{coral(1)}, nil
-	case "bubble":
-		return CoralType{coral(2)}, nil
-	case "fire":
-		return CoralType{coral(3)}, nil
-	case "horn":
-		return CoralType{coral(4)}, nil
-	}
-	return nil, fmt.Errorf("unexpected coral type '%v', expecting one of 'tube', 'brain', 'bubble', 'fire', or 'horn'", s)
 }
 
 // String ...

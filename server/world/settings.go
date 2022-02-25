@@ -47,7 +47,7 @@ type Settings struct {
 func defaultSettings() *Settings {
 	return &Settings{
 		Name:            "World",
-		DefaultGameMode: GameModeSurvival,
+		DefaultGameMode: GameModes.Survival,
 		Difficulty:      DifficultyNormal,
 		TimeCycle:       true,
 		WeatherCycle:    true,

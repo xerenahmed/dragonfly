@@ -67,7 +67,7 @@ func (c CoralBlock) EncodeItem() (name string, meta int16) {
 // allCoralBlocks returns a list of all coral block variants
 func allCoralBlocks() (c []world.Block) {
 	f := func(dead bool) {
-		for _, t := range CoralTypes() {
+		for _, t := range CoralTypes.Slice() {
 			c = append(c, CoralBlock{Type: t, Dead: dead})
 		}
 	}

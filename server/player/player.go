@@ -113,7 +113,7 @@ func New(name string, skin skin.Skin, pos mgl64.Vec3) *Player {
 		hunger:    newHungerManager(),
 		health:    entity.NewHealthManager(),
 		effects:   entity.NewEffectManager(),
-		gameMode:  world.GameModeSurvival,
+		gameMode:  world.GameModes.Survival,
 		h:         NopHandler{},
 		name:      name,
 		skin:      skin,

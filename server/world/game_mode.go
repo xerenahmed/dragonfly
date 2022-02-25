@@ -22,21 +22,15 @@ type GameMode interface {
 	Visible() bool
 }
 
-var (
-	// GameModeSurvival is the survival game mode: Players with this game mode have limited supplies and can break blocks
-	// after taking some time.
-	GameModeSurvival survival
-	// GameModeCreative represents the creative game mode: Players with this game mode have infinite blocks and
-	// items and can break blocks instantly. Players with creative mode can also fly.
-	GameModeCreative creative
-	// GameModeAdventure represents the adventure game mode: Players with this game mode cannot edit the world
-	// (placing or breaking blocks).
-	GameModeAdventure adventure
-	// GameModeSpectator represents the spectator game mode: Players with this game mode cannot interact with the
-	// world and cannot be seen by other players. spectator players can fly, like creative mode, and can
-	// move through blocks.
-	GameModeSpectator spectator
-)
+// GameModes holds all available GameMode implementations.
+var GameModes gameModes
+
+type gameModes struct {
+	Survival  survival
+	Creative  creative
+	Adventure adventure
+	Spectator spectator
+}
 
 // survival is the survival game mode: Players with this game mode have limited supplies and can break blocks after
 // taking some time.

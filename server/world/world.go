@@ -1018,7 +1018,7 @@ func (w *World) SetSpawn(pos cube.Pos) {
 // The default game mode may be changed using SetDefaultGameMode().
 func (w *World) DefaultGameMode() GameMode {
 	if w == nil {
-		return GameModeSurvival
+		return GameModes.Survival
 	}
 	w.set.Lock()
 	defer w.set.Unlock()

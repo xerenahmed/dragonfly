@@ -11,11 +11,11 @@ const (
 
 func gameModeToData(mode world.GameMode) uint8 {
 	switch mode {
-	case world.GameModeCreative:
+	case world.GameModes.Creative:
 		return creative
-	case world.GameModeAdventure:
+	case world.GameModes.Adventure:
 		return adventure
-	case world.GameModeSpectator:
+	case world.GameModes.Spectator:
 		return spectator
 	default:
 		return survival
@@ -25,12 +25,12 @@ func gameModeToData(mode world.GameMode) uint8 {
 func dataToGameMode(mode uint8) world.GameMode {
 	switch mode {
 	case creative:
-		return world.GameModeCreative
+		return world.GameModes.Creative
 	case adventure:
-		return world.GameModeAdventure
+		return world.GameModes.Adventure
 	case spectator:
-		return world.GameModeSpectator
+		return world.GameModes.Spectator
 	default:
-		return world.GameModeSurvival
+		return world.GameModes.Survival
 	}
 }
