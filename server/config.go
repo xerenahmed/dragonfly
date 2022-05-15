@@ -1,8 +1,8 @@
 package server
 
-// Config is the configuration of a Dragonfly server. It holds settings that affect different aspects of the
+// UserConfig is the configuration of a Dragonfly server. It holds settings that affect different aspects of the
 // server, such as its name and maximum players.
-type Config struct {
+type UserConfig struct {
 	// Network holds settings related to network aspects of the server.
 	Network struct {
 		// Address is the address on which the server should listen. Players may connect to this address in
@@ -57,8 +57,8 @@ type Config struct {
 }
 
 // DefaultConfig returns a configuration with the default values filled out.
-func DefaultConfig() Config {
-	c := Config{}
+func DefaultConfig() UserConfig {
+	c := UserConfig{}
 	c.Network.Address = ":19132"
 	c.Server.Name = "Dragonfly Server"
 	c.Server.ShutdownMessage = "Server closed."

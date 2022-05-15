@@ -33,7 +33,7 @@ func main() {
 }
 
 // readConfig reads the configuration from the config.toml file, or creates the file if it does not yet exist.
-func readConfig() (server.Config, error) {
+func readConfig() (server.UserConfig, error) {
 	c := server.DefaultConfig()
 	if _, err := os.Stat("config.toml"); os.IsNotExist(err) {
 		data, err := toml.Marshal(c)

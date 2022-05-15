@@ -35,6 +35,7 @@ import (
 	"github.com/sandertv/gophertunnel/minecraft/text"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/maps"
+	"log"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -47,22 +48,27 @@ import (
 	"time"
 )
 
+type Config struct {
+	Log internal.Logger
+
+	PlayerProvider player.Provider
+
+	Listeners []Listener
+
+	Allower Allower
+
+	Resources []*resource.Pack
+}
+
 // Server implements a Dragonfly server. It runs the main server loop and handles the connections of players
 // trying to join the server.
 type Server struct {
-	c       Config
-	log     internal.Logger
+	conf    Config
 	name    atomic.Value[string]
 	started atomic.Bool
 
-	playerProvider     atomic.Value[player.Provider]
 	world, nether, end *world.World
 
-	listenMu  sync.Mutex
-	listeners []Listener
-	a         atomic.Value[Allower]
-
-	resources      []*resource.Pack
 	itemComponents map[string]map[string]any
 
 	joinMessage, quitMessage atomic.Value[string]
@@ -79,18 +85,56 @@ type Server struct {
 	wg sync.WaitGroup
 }
 
+func (conf Config) Listen(addr string) (*Server, error) {
+	if conf.Log == nil {
+		conf.Log = logrus.New()
+	}
+	if conf.PlayerProvider == nil {
+		conf.PlayerProvider = player.NopProvider{}
+	}
+	if conf.Allower == nil {
+		conf.Allower = allower{}
+	}
+	s := &Server{
+		conf:     conf,
+		incoming: make(chan *session.Session),
+		p:        make(map[uuid.UUID]*player.Player),
+		world:    &world.World{}, nether: &world.World{}, end: &world.World{},
+	}
+	p, err := mcdb.New(c.World.Folder, opt.FlateCompression)
+	if err != nil {
+		log.Fatalf("error loading world: %v", err)
+	}
+	*s.world = *s.createWorld(world.Overworld, s.nether, s.end, biome.Plains{}, []world.Block{block.Grass{}, block.Dirt{}, block.Dirt{}, block.Bedrock{}}, p)
+	*s.nether = *s.createWorld(world.Nether, s.world, s.end, biome.NetherWastes{}, []world.Block{block.Netherrack{}, block.Netherrack{}, block.Netherrack{}, block.Bedrock{}}, p)
+	*s.end = *s.createWorld(world.End, s.nether, s.world, biome.End{}, []world.Block{block.EndStone{}, block.EndStone{}, block.EndStone{}, block.Bedrock{}}, p)
+
+	s.registerTargetFunc()
+
+	s.JoinMessage(c.Server.JoinMessage)
+	s.QuitMessage(c.Server.QuitMessage)
+
+	s.loadResources(c.Resources.Folder, conf.Log)
+	s.checkNetIsolation()
+}
+
+func Listen(addr string) (*Server, error) {
+	var conf Config
+	return conf.Listen(addr)
+}
+
 func init() {
 	// Seeding the random for things like lightning that need to use RNG.
 	rand.Seed(time.Now().UnixNano())
 }
 
-// New returns a new server using the Config passed. If nil is passed, a default configuration is returned.
+// New returns a new server using the UserConfig passed. If nil is passed, a default configuration is returned.
 // (A call to server.DefaultConfig().)
 // The Logger passed will be used to log errors and information to. If nil is passed, a default Logger is
 // used by calling logrus.New().
 // Note that no two servers should be active at the same time. Doing so anyway will result in unexpected
 // behaviour.
-func New(c *Config, log internal.Logger) *Server {
+func New(c *UserConfig, log internal.Logger) *Server {
 	if log == nil {
 		log = logrus.New()
 	}
