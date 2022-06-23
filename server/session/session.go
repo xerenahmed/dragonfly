@@ -19,6 +19,7 @@ import (
 	"github.com/sandertv/gophertunnel/minecraft/protocol/login"
 	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
 	"github.com/sandertv/gophertunnel/minecraft/text"
+	"golang.org/x/exp/slices"
 	"io"
 	"net"
 	"sync"
@@ -34,6 +35,9 @@ type Session struct {
 	c        Controllable
 	conn     Conn
 	handlers map[uint32]packetHandler
+
+	pkBufMu sync.Mutex
+	pkBuf   []packet.Packet
 
 	// onStop is called when the session is stopped. The controllable passed is the controllable that the
 	// session controls.
@@ -212,7 +216,7 @@ func (s *Session) Spawn(c Controllable, w *world.World, gm world.GameMode, onSto
 // Start makes the session start handling incoming packets from the client.
 func (s *Session) Start() {
 	s.c.World().AddEntity(s.c)
-	go s.handlePackets()
+	go s.readPackets()
 }
 
 // Controllable returns the Controllable entity that the Session controls.
@@ -279,9 +283,14 @@ func (s *Session) ClientData() login.ClientData {
 	return s.conn.ClientData()
 }
 
-// handlePackets continuously handles incoming packets from the connection. It processes them accordingly.
-// Once the connection is closed, handlePackets will return.
-func (s *Session) handlePackets() {
+// Tick ...
+func (s *Session) Tick(w *world.World, current int64) {
+	s.handlePackets()
+}
+
+// readPackets continuously reads incoming packets from the connection. It puts them into a buffer.
+// Once the connection is closed, readPackets will return.
+func (s *Session) readPackets() {
 	go s.background()
 
 	defer func() {
@@ -299,6 +308,19 @@ func (s *Session) handlePackets() {
 		if err != nil {
 			return
 		}
+		s.pkBufMu.Lock()
+		s.pkBuf = append(s.pkBuf, pk)
+		s.pkBufMu.Unlock()
+	}
+}
+
+// handlePackets ...
+func (s *Session) handlePackets() {
+	s.pkBufMu.Lock()
+	buf := slices.Clone(s.pkBuf)
+	s.pkBuf = s.pkBuf[:0]
+	s.pkBufMu.Unlock()
+	for _, pk := range buf {
 		if err := s.handlePacket(pk); err != nil {
 			// An error occurred during the handling of a packet. Print the error and stop handling any more
 			// packets.
