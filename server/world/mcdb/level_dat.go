@@ -97,6 +97,7 @@ type data struct {
 	MaxCommandChainLength          int32          `nbt:"maxcommandchainlength"`
 	MobGriefing                    bool           `nbt:"mobgriefing"`
 	NaturalRegeneration            bool           `nbt:"naturalregeneration"`
+	NaturalGeneration              bool           `nbt:"naturalgeneration"`
 	PRID                           string         `nbt:"prid"`
 	PVP                            bool           `nbt:"pvp"`
 	RainLevel                      float32        `nbt:"rainLevel"`
